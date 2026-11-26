@@ -790,6 +790,36 @@ label.chk{display:flex;gap:8px;align-items:center;font-weight:700}
 @media (max-width:700px){.case-ecg .history.open{-webkit-line-clamp:unset;display:block}}
 .ecg-wrap:has(> .ecg-svg.beats){background:none;border:0;padding:0}
 .ecg-frame:has(.ecg-svg.beats){max-width:560px}
+/* ---- Hands-on tools ---- */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.tool-tile{display:flex;flex-direction:column;gap:4px;text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:12px;padding:12px 14px;cursor:pointer}
+.tool-tile:hover{border-color:var(--c)}
+.tool-tile span{font-size:.88rem;color:var(--muted)}
+.tool-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.tool-head h2{margin:0}
+.chip{font:inherit;font-size:.85rem;font-weight:700;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer;margin:3px 4px 3px 0}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.art{border-color:var(--c);color:var(--c)}.chip.art.on{background:var(--c);color:#fff}
+.tool-axis{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:16px;align-items:start}
+@media (max-width:700px){.tool-axis,.cor-grid,.ap-grid{grid-template-columns:1fr!important}}
+.ax-wheel{width:100%;touch-action:none;cursor:grab;user-select:none}
+.ax-slide{width:100%;accent-color:var(--accent)}
+.ax-deg{font:800 2rem ui-monospace,Menlo,monospace}
+.ax-name{font-weight:800;font-size:1.1rem}.ax-name.normal{color:#1f7a45}.ax-name.lad{color:#b07b00}.ax-name.rad{color:#1f5fb0}.ax-name.extreme{color:#b01e2e}
+.ax-leads{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.ax-lead{margin:0;text-align:center}.ax-lead svg{width:100%;border-radius:6px;border:1px solid var(--line)}.ax-lead figcaption{font:700 .8rem ui-monospace,Menlo,monospace;color:var(--muted)}
+.cor-pick{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin:4px 0}.cor-pick .lbl{margin:0 8px 0 0;min-width:52px}
+.cor-grid{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:14px;align-items:start;margin:8px 0}
+.heart-sa{width:100%}
+.cor-info h3{margin:.2rem 0 .4rem}.cor-info p{margin:.35rem 0;line-height:1.5}
+.ap-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin:8px 0}
+.ap-svg{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:10px}
+.ap-info{background:color-mix(in srgb,#7c4dff 8%,transparent);border-radius:12px;padding:10px 14px;margin-top:8px}.ap-info h3{margin:.1rem 0 .3rem}
+.sb-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px 12px}
+.sb-controls label{display:flex;flex-direction:column;font-size:.8rem;font-weight:800;color:var(--muted);gap:3px}
+.sb-controls select,.sb-controls input{font:inherit;font-size:.92rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.sb-toggles{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0}.sb-toggles .chk{font-weight:600;font-size:.9rem}
+.sb-read{margin-top:10px}
 
 </style>
 </head>
@@ -1647,7 +1677,9 @@ const ECG = (() => {
         svg += pathEl(tracePath(c.data[L], t0, t0 + (o.sec || 2.5), x0, base));
         if (col) svg += `<path d="M${x0} ${base - 4}v8" stroke="#141414" stroke-width=".3"/>`;
         const hl = o.highlight && o.highlight.includes(L);
-        svg += hl ? `<rect x="${x0 + 0.6}" y="${base - 15.4}" width="${L.length * 2.3 + 2.4}" height="5" rx="1" fill="#d42a3c"/><text x="${x0 + 1.6}" y="${base - 11.5}" font-size="3.4" font-family="ui-monospace,Menlo,monospace" font-weight="700" fill="#fff">${L}</text>` : label(x0 + 1.5, base - 13.5, L);
+        const hl2 = o.highlight2 && o.highlight2.includes(L);
+        if (hl2) svg += `<rect x="${x0 + 0.6}" y="${base - 15.4}" width="${L.length * 2.3 + 2.4}" height="5" rx="1" fill="#2d7fe0"/><text x="${x0 + 1.6}" y="${base - 11.5}" font-size="3.4" font-family="ui-monospace,Menlo,monospace" font-weight="700" fill="#fff">${L}</text>`;
+        else svg += hl ? `<rect x="${x0 + 0.6}" y="${base - 15.4}" width="${L.length * 2.3 + 2.4}" height="5" rx="1" fill="#d42a3c"/><text x="${x0 + 1.6}" y="${base - 11.5}" font-size="3.4" font-family="ui-monospace,Menlo,monospace" font-weight="700" fill="#fff">${L}</text>` : label(x0 + 1.5, base - 13.5, L);
       });
     });
     return svg + `</svg>`;
@@ -3760,6 +3792,237 @@ function initRace(host, onExit) {
   pickRace();
 }
 
+/* ===================== Hands-on tools (Learn tab) =====================
+   Axis compass, coronary territories, action potential ↔ ECG, and a 12-lead sandbox.
+   Ideas inspired by Brayden Shaw's ECG Interactive; built from scratch for Six Step.
+   ====================================================================== */
+const TOOLS = [
+  { id: "axis", name: "Axis compass", blurb: "Drag the arrow and watch the limb leads change", color: "var(--rb-blue)" },
+  { id: "coronary", name: "Coronary territories", blurb: "Pick an artery or a wall: see the leads light up", color: "var(--rb-red)" },
+  { id: "ap", name: "Action potential ↔ ECG", blurb: "One beat, three views", color: "var(--rb-violet)" },
+  { id: "sandbox", name: "12-lead sandbox", blurb: "Switch things on and watch the ECG change", color: "var(--rb-green)" }
+];
+const LIMB6 = [["I", 0], ["II", 60], ["III", 120], ["aVR", -150], ["aVL", -30], ["aVF", 90]];
+const cosd2 = d => Math.cos(d * Math.PI / 180);
+const g2 = (t, c, s, a) => a * Math.exp(-0.5 * ((t - c) / s) ** 2);
+let toolUid = 0;
+function miniPaper(w, h) {
+  const id = "tp" + (++toolUid);
+  return { id, defs: `<defs><pattern id="${id}s" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="#f3b6b6" stroke-width=".07"/></pattern><pattern id="${id}b" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M5 0H0V5" fill="none" stroke="#e58b8b" stroke-width=".16"/></pattern></defs>`, bg: `<rect width="${w}" height="${h}" fill="#fff7f5"/><rect width="${w}" height="${h}" fill="url(#${id}s)"/><rect width="${w}" height="${h}" fill="url(#${id}b)"/>` };
+}
+
+/* ---------- 1. Axis compass ---------- */
+function limbBeat(axis, ang) {
+  const p = cosd2(axis - ang);
+  const r = Math.pow((1 + p) / 2, 1.6) * 1.15 + 0.05, s = 0.95 * Math.pow((1 - p) / 2, 1.6) + 0.04, q = p > 0.55 && ang !== -150 ? 0.08 : 0;
+  const pw = 0.1 * cosd2(60 - ang), tw = 0.28 * cosd2(0.45 * axis + 22 - ang);
+  let d = ""; for (let t = 0; t <= 0.72; t += 0.004) {
+    const v = g2(t, 0.09, 0.022, pw) + g2(t, 0.2, 0.006, -q) + g2(t, 0.225, 0.009, r) + g2(t, 0.25, 0.008, -s) + g2(t, 0.47, 0.045, tw);
+    d += (t ? "L" : "M") + (t * 25).toFixed(2) + " " + (17 - v * 10).toFixed(2);
+  }
+  return { d, net: (r - q - s) * 10 };
+}
+function axisTool(host) {
+  let axis = 60;
+  const presets = [["Normal (+60°)", 60], ["Still normal (−20°)", -20], ["LAD (−60°)", -60], ["RAD (+120°)", 120], ["Extreme (−150°)", -150]];
+  host.innerHTML = `<div class="tool-axis"><div class="ax-left"><svg id="axWheel" viewBox="-120 -120 240 240" class="ax-wheel" role="slider" aria-label="Mean QRS axis in degrees" tabindex="0"></svg>
+    <input type="range" min="-180" max="180" step="1" value="60" id="axSlide" class="ax-slide" aria-label="Axis in degrees">
+    <div class="ax-presets">${presets.map(([t, a]) => `<button class="chip" data-a="${a}">${t}</button>`).join("")}</div></div>
+    <div class="ax-right"><div id="axRead" class="ax-read"></div><div id="axLeads" class="ax-leads"></div></div></div>
+    <p class="small">Drag the arrow (or use the slider or arrow keys). The lead pointing most towards the arrow has the tallest R wave; the lead at 90° to it is equiphasic.</p>`;
+  const wheel = $("#axWheel", host);
+  const zone = (a0, a1, col) => { const r = 100, x0 = r * cosd2(a0), y0 = r * Math.sin(a0 * Math.PI / 180), x1 = r * cosd2(a1), y1 = r * Math.sin(a1 * Math.PI / 180); return `<path d="M0 0L${x0} ${y0}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}Z" fill="${col}" opacity=".16"/>`; };
+  const paint = () => {
+    const tip = [95 * cosd2(axis), 95 * Math.sin(axis * Math.PI / 180)];
+    wheel.innerHTML = zone(-30, 90, "#1f9d55") + zone(-90, -30, "#e8a317") + zone(90, 180, "#2d7fe0") + zone(-180, -90, "#d42a3c") +
+      `<circle r="100" fill="none" stroke="var(--line)" stroke-width="1"/>` +
+      LIMB6.map(([L, a]) => `<line x1="${-100 * cosd2(a)}" y1="${-100 * Math.sin(a * Math.PI / 180)}" x2="${100 * cosd2(a)}" y2="${100 * Math.sin(a * Math.PI / 180)}" stroke="var(--muted)" stroke-width=".8" stroke-dasharray="${L === "I" || L === "aVF" ? "" : "3 3"}"/><text x="${110 * cosd2(a)}" y="${110 * Math.sin(a * Math.PI / 180) + 3.5}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--ink)">${L}</text>`).join("") +
+      `<text x="0" y="-60" text-anchor="middle" font-size="8" fill="#b07b00">LAD</text><text x="52" y="30" text-anchor="middle" font-size="8" fill="#1f7a45">Normal</text><text x="-52" y="40" text-anchor="middle" font-size="8" fill="#1f5fb0">RAD</text><text x="-48" y="-40" text-anchor="middle" font-size="8" fill="#b01e2e">Extreme</text>` +
+      `<line x1="0" y1="0" x2="${tip[0]}" y2="${tip[1]}" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/><circle cx="${tip[0]}" cy="${tip[1]}" r="8" fill="var(--accent)" class="ax-handle"/><circle r="4" fill="var(--ink)"/>`;
+    const beats = LIMB6.map(([L, a]) => ({ L, ...limbBeat(axis, a) }));
+    const I = beats[0].net, F = beats[5].net, II = beats[1].net;
+    const kind = I > 0 && F > 0 ? "normal" : I > 0 ? (II > 0 ? "normal" : "lad") : F > 0 ? "rad" : "extreme";
+    const nm = { normal: "Normal axis", lad: "Left axis deviation", rad: "Right axis deviation", extreme: "Extreme axis deviation" }[kind];
+    const tallest = beats.reduce((a, b) => b.net > a.net ? b : a).L; const flat = beats.reduce((a, b) => Math.abs(b.net) < Math.abs(a.net) ? b : a).L;
+    $("#axRead", host).innerHTML = `<div class="ax-deg">${axis > 0 ? "+" : ""}${axis}°</div><div class="ax-name ${kind}">${nm}</div>
+      <p class="small">Lead I <b>${I > 0 ? "👍 up" : "👎 down"}</b> · aVF <b>${F > 0 ? "👍 up" : "👎 down"}</b>${I > 0 && F <= 0 ? ` · lead II <b>${II > 0 ? "up: still normal" : "down: LAD"}</b>` : ""}</p>
+      <p class="small">Tallest R: <b>${tallest}</b> · most equiphasic: <b>${flat}</b></p>`;
+    const mp = miniPaper(18, 30);
+    $("#axLeads", host).innerHTML = beats.map(b => `<figure class="ax-lead"><svg viewBox="0 0 18 30">${mp.defs.replace(/tp\d+/g, mp.id)}${mp.bg}<path d="${b.d}" fill="none" stroke="#141414" stroke-width=".35"/><text x="1" y="3.6" font-size="3" font-weight="800" font-family="ui-monospace,Menlo,monospace">${b.L}</text></svg><figcaption>${b.net > 0 ? "+" : ""}${Math.round(b.net)} mm</figcaption></figure>`).join("");
+    $("#axSlide", host).value = axis;
+  };
+  const set = a => { axis = Math.round(((a + 540) % 360) - 180); paint(); };
+  let drag = false;
+  const fromEv = e => { const pt = wheel.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const m = wheel.getScreenCTM(); if (!m) return; const p = pt.matrixTransform(m.inverse()); set(Math.atan2(p.y, p.x) * 180 / Math.PI); };
+  wheel.addEventListener("pointerdown", e => { drag = true; wheel.setPointerCapture(e.pointerId); fromEv(e); });
+  wheel.addEventListener("pointermove", e => drag && fromEv(e));
+  wheel.addEventListener("pointerup", () => drag = false);
+  wheel.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { set(axis + 5); e.preventDefault(); } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { set(axis - 5); e.preventDefault(); } });
+  $("#axSlide", host).oninput = e => set(+e.target.value);
+  $$("[data-a]", host).forEach(b => b.onclick = () => set(+b.dataset.a));
+  paint();
+}
+
+/* ---------- 2. Coronary territories ---------- */
+const WALLS = { anterior: [-135, -60], lateral: [-60, 15], posterior: [15, 70], inferior: [70, 135], septal: [135, 225] };
+const WALL_ART = { anterior: "LAD", septal: "LAD", lateral: "LCx", posterior: "LCx", inferior: "RCA", rv: "RCA" };
+const ART_COL = { LAD: "#d42a3c", LCx: "#2d7fe0", RCA: "#1f9d55" };
+const TERR_WALLS = { septal: ["septal"], anterior: ["anterior"], anteroseptal: ["anterior", "septal"], anterolateral: ["anterior", "lateral"], extensive: ["septal", "anterior", "lateral"], lateral: ["lateral"], highlateral: ["lateral"], inferior: ["inferior"], inferolateral: ["inferior", "lateral"], inferoposterior: ["inferior", "posterior"], posterior: ["posterior"], rvi: ["inferior", "rv"] };
+const ART_INFO = {
+  LAD: { terr: "anteroseptal", text: "The LAD runs down the front of the heart in the interventricular groove. It supplies the anterior wall, most of the septum (and the bundle branches), and the lateral wall through its diagonal branches. Watch for: LV failure, BBBs, infranodal (Mobitz II, complete) blocks." },
+  LCx: { terr: "lateral", text: "The LCx wraps around the left AV groove to the lateral and posterior walls (obtuse marginal branches). In left-dominant people (about 8–10%) it gives the PDA too. Watch for: LV dysfunction, AV nodal block." },
+  RCA: { terr: "inferior", text: "The RCA runs in the right AV groove. In most people it gives the PDA: the inferior and posterior walls, the RV, part of the septum, and the SA and AV nodes. Watch for: bradycardia, AV blocks, hypotension (especially with RV involvement)." }
+};
+function heartSVG(lit) {
+  const arc = (a0, a1, r0, r1) => { const p = (r, a) => `${(r * cosd2(a)).toFixed(1)} ${(r * Math.sin(a * Math.PI / 180)).toFixed(1)}`; return `M${p(r1, a0)}A${r1} ${r1} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${p(r1, a1)}L${p(r0, a1)}A${r0} ${r0} 0 ${a1 - a0 > 180 ? 1 : 0} 0 ${p(r0, a0)}Z`; };
+  let s = `<svg viewBox="-150 -110 270 220" class="heart-sa" role="img" aria-label="Short-axis view of the ventricles">`;
+  const rvOn = lit.includes("rv");
+  s += `<path d="M-41 -71 C -150 -100 -150 100 -41 71 A 82 82 0 0 1 -41 -71 Z" fill="${rvOn ? ART_COL.RCA : "#eadfe1"}" opacity="${rvOn ? .85 : 1}" stroke="#fff" stroke-width="2"/><text x="-110" y="4" text-anchor="middle" font-size="11" font-weight="800" fill="${rvOn ? "#fff" : "var(--muted)"}">RV</text>`;
+  Object.entries(WALLS).forEach(([w, [a0, a1]]) => {
+    const on = lit.includes(w); const col = ART_COL[WALL_ART[w]];
+    s += `<path d="${arc(a0, a1, 44, 82)}" fill="${col}" opacity="${on ? .9 : .16}" stroke="#fff" stroke-width="2"/>`;
+    const am = (a0 + a1) / 2; s += `<text x="${(63 * cosd2(am)).toFixed(1)}" y="${(63 * Math.sin(am * Math.PI / 180) + 4).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="800" fill="${on ? "#fff" : "var(--ink)"}">${w[0].toUpperCase() + w.slice(1)}</text>`;
+  });
+  s += `<circle r="44" fill="#fff7f5"/><text y="4" text-anchor="middle" font-size="10" fill="var(--muted)">LV</text><text x="-140" y="-96" font-size="9" fill="var(--muted)">Short axis, looking up from the apex</text></svg>`;
+  return s;
+}
+function coronaryTool(host) {
+  let sel = "inferior";
+  const terrKeys = ["septal", "anterior", "anteroseptal", "anterolateral", "extensive", "lateral", "highlateral", "inferior", "inferolateral", "inferoposterior", "posterior", "rvi"];
+  const nm = k => k === "rvi" ? "Inferior + RV" : ECG.TERR[k].name;
+  host.innerHTML = `<div class="cor-pick"><span class="lbl">Artery</span>${Object.keys(ART_INFO).map(a => `<button class="chip art" data-art="${a}" style="--c:${ART_COL[a]}">${a}</button>`).join("")}</div>
+    <div class="cor-pick"><span class="lbl">STEMI</span>${terrKeys.map(k => `<button class="chip" data-terr="${k}">${nm(k)}</button>`).join("")}</div>
+    <div class="cor-grid"><div id="corHeart"></div><div id="corInfo" class="cor-info"></div></div><div id="corEcg"></div>`;
+  const paint = (art) => {
+    const key = sel; const T = key === "rvi" ? ECG.TERR.inferior : ECG.TERR[key];
+    const lit = art ? Object.keys(WALL_ART).filter(w => WALL_ART[w] === art) : TERR_WALLS[key];
+    $("#corHeart", host).innerHTML = heartSVG(lit);
+    const c = ECG.build({ rhythm: "nsr", rate: 72, stemi: key === "rvi" ? "inferior" : key, rvi: key === "rvi", axis: "normal" });
+    const recip = c.truth.recip; const ste = T.leads;
+    $("#corInfo", host).innerHTML = art ? `<h3 style="color:${ART_COL[art]}">${art}</h3><p>${ART_INFO[art].text}</p><p class="small">The 12-lead shows a typical ${nm(ART_INFO[art].terr).toLowerCase()} STEMI from this artery.</p>`
+      : `<h3>${nm(key)} STEMI</h3><p><b>ST elevation:</b> ${ste.length ? ste.join(", ") : "none in the standard leads"}${key === "rvi" ? ", plus V1 and V4R" : ""}.</p><p><b>Reciprocal depression:</b> ${T.recip.length ? T.recip.join(", ") : "none expected"}${T.posterior ? " (V1–V3 are the mirror image of the posterior wall: take V7–V9)" : ""}.</p><p><b>Artery:</b> ${T.arteryLong}.</p>${key.startsWith("infer") || key === "rvi" ? `<p class="small">Inferior: take a V4R.${key === "rvi" ? " STE in V4R = RV involvement: careful with GTN." : ""}</p>` : ""}`;
+    const rows = [["I", "aVR", "V1", "V4"], ["II", "aVL", "V2", "V5"], ["III", "aVF", "V3", "V6"]];
+    const extra = key === "rvi" ? [["V4R", "V1"]] : T.posterior ? [["V7", "V8", "V9"]] : null;
+    $("#corEcg", host).innerHTML = ECG.frame(ECG.renderGrid(c, rows, { highlight: ste.concat(key === "rvi" ? ["V1"] : []), highlight2: recip, sameTime: true }), { head: `<span><b style="color:#d42a3c">Red</b> = ST elevation · <b style="color:#2d7fe0">blue</b> = reciprocal ST depression</span>` }) + (extra ? ECG.frame(ECG.renderGrid(c, extra, { sameTime: true, highlight: key === "rvi" ? ["V4R"] : ["V7", "V8", "V9"] }), { tools: false, head: key === "rvi" ? "Right-sided lead V4R" : "Posterior leads V7–V9" }) : "");
+    ECG.wire(host);
+    $$("[data-terr]", host).forEach(b => b.classList.toggle("on", !art && b.dataset.terr === key));
+    $$("[data-art]", host).forEach(b => b.classList.toggle("on", b.dataset.art === art));
+  };
+  $$("[data-terr]", host).forEach(b => b.onclick = () => { sel = b.dataset.terr; paint(); });
+  $$("[data-art]", host).forEach(b => b.onclick = () => { sel = ART_INFO[b.dataset.art].terr; paint(b.dataset.art); });
+  paint();
+}
+
+/* ---------- 3. Action potential ↔ ECG ---------- */
+const AP_VIEWS = [
+  { id: "p", t: "P wave", ecg: [-0.16, -0.06], ap: null, cond: ["sa", "atria"], cur: "Atrial myocytes: Na⁺ in (phase 0)", text: "The SA node fires and the impulse spreads across both atria: atrial depolarisation. Atrial repolarisation is hidden in the QRS." },
+  { id: "pr", t: "PR segment", ecg: [-0.06, 0], ap: null, cond: ["av"], cur: "AV node: slow Ca²⁺-driven conduction", text: "The impulse is held in the AV node so the atria can finish emptying into the ventricles. On the ECG it's a flat line." },
+  { id: "ph0", t: "Phase 0 · QRS", ecg: [0, 0.085], ap: [0.02, 0.04], cond: ["his", "bb", "purk", "vent"], cur: "Fast Na⁺ in", text: "Rapid depolarisation: the membrane flies from −90 mV to about +20 mV as fast sodium channels open. Down the His bundle, bundle branches and Purkinje fibres into the ventricles: the QRS." },
+  { id: "ph1", t: "Phase 1 · J point", ecg: [0.08, 0.095], ap: [0.04, 0.06], cond: ["vent"], cur: "Na⁺ channels close, transient K⁺ out", text: "Early rapid repolarisation: a small notch back towards 0 mV. On the ECG this is the J point, where the QRS ends and the ST segment starts." },
+  { id: "ph2", t: "Phase 2 · ST segment", ecg: [0.09, 0.2], ap: [0.06, 0.26], cond: ["vent"], cur: "Ca²⁺ in balanced by K⁺ out", text: "The plateau: the whole ventricle is depolarised, so there's no voltage difference to record and the ST segment is flat. This is the long squeeze. Injury shifts it up or down." },
+  { id: "ph3", t: "Phase 3 · T wave", ecg: [0.2, 0.38], ap: [0.26, 0.36], cond: ["vent"], cur: "K⁺ out", text: "Rapid repolarisation back to −90 mV as potassium leaves: the T wave. The QT spans phases 0–3." },
+  { id: "ph4", t: "Phase 4 · TP baseline", ecg: [0.38, 0.62], ap: [0.36, 0.5], cond: [], cur: "Na⁺/K⁺ pump restores the gradients", text: "Resting membrane potential (about −90 mV). The heart is filling. The TP segment is the true baseline." }
+];
+function apTool(host) {
+  let on = "ph2";
+  const c = ECG.build({ rhythm: "nsr", rate: 66, axis: "normal", pr: 0.16 });
+  const b = ECG.beatTimes(c);
+  host.innerHTML = `<div class="ap-chips">${AP_VIEWS.map(v => `<button class="chip" data-v="${v.id}">${v.t}</button>`).join("")}</div>
+    <div class="ap-grid"><div><p class="lbl">Ventricular action potential</p><div id="apGraph"></div></div><div><p class="lbl">Conduction system</p><div id="apCond"></div></div></div>
+    <div><p class="lbl">Lead II</p><div id="apEcg"></div></div><div id="apInfo" class="ap-info"></div>`;
+  const apPath = () => { let d = ""; for (let t = 0; t <= 0.5; t += 0.002) { let v; if (t < 0.02) v = -90; else if (t < 0.04) v = -90 + 110 * (t - 0.02) / 0.02; else if (t < 0.06) v = 20 - 18 * (t - 0.04) / 0.02; else if (t < 0.26) v = 2 - 12 * (t - 0.06) / 0.2; else if (t < 0.36) { const x = (t - 0.26) / 0.1; v = -10 - 80 * (1 - Math.cos(x * Math.PI)) / 2; } else v = -90; d += (t ? "L" : "M") + (20 + t * 440).toFixed(1) + " " + (20 + (30 - v) * 1.2).toFixed(1); } return d; };
+  const paint = () => {
+    const v = AP_VIEWS.find(x => x.id === on);
+    const band = v.ap ? `<rect x="${20 + v.ap[0] * 440}" y="8" width="${(v.ap[1] - v.ap[0]) * 440}" height="160" fill="#7c4dff" opacity=".16"/>` : "";
+    $("#apGraph", host).innerHTML = `<svg viewBox="0 0 250 180" class="ap-svg">${band}<line x1="20" y1="${20 + 120 * 1.2}" x2="245" y2="${20 + 120 * 1.2}" stroke="var(--line)"/><path d="${apPath()}" fill="none" stroke="var(--ink)" stroke-width="2.2"/>
+      ${[["+20", 20], ["0", 0], ["−90", -90]].map(([t, y]) => `<text x="16" y="${20 + (30 - y) * 1.2 + 3}" font-size="8" text-anchor="end" fill="var(--muted)">${t}</text><line x1="18" x2="245" y1="${20 + (30 - y) * 1.2}" y2="${20 + (30 - y) * 1.2}" stroke="var(--line)" stroke-dasharray="2 3"/>`).join("")}
+      ${[["0", 0.03], ["1", 0.05], ["2", 0.16], ["3", 0.31], ["4", 0.43]].map(([t, x]) => `<text x="${20 + x * 440}" y="176" font-size="9" font-weight="800" text-anchor="middle" fill="${v.ap && x >= v.ap[0] && x <= v.ap[1] ? "#7c4dff" : "var(--muted)"}">${t}</text>`).join("")}<text x="245" y="12" font-size="8" text-anchor="end" fill="var(--muted)">mV</text></svg>`;
+    const lit = new Set(v.cond); const L = k => lit.has(k) ? "var(--accent)" : "#c9bfc2";
+    $("#apCond", host).innerHTML = `<svg viewBox="0 0 220 180" class="ap-svg"><path d="M110 18 C 40 18 18 70 40 112 C 58 146 96 168 110 172 C 124 168 162 146 180 112 C 202 70 180 18 110 18 Z" fill="${lit.has("atria") ? "#ffe3e6" : lit.has("vent") ? "#fde7ec" : "#fbf4f5"}" stroke="#e3c9ce" stroke-width="2"/>
+      <path d="M44 64 Q110 74 176 64" stroke="#e3c9ce" stroke-width="2" fill="none"/>
+      <circle cx="66" cy="38" r="8" fill="${L("sa")}"/><text x="66" y="22" font-size="9" text-anchor="middle" font-weight="800">SA</text>
+      <circle cx="104" cy="72" r="7" fill="${L("av")}"/><text x="84" y="88" font-size="9" text-anchor="middle" font-weight="800">AV</text>
+      <path d="M104 78 L110 98" stroke="${L("his")}" stroke-width="5" stroke-linecap="round"/><text x="124" y="94" font-size="8" fill="var(--muted)">His</text>
+      <path d="M110 98 Q 92 126 82 150 M110 98 Q 128 126 140 150" stroke="${L("bb")}" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M82 150 Q 66 140 54 118 M82 150 Q 96 162 108 160 M140 150 Q 160 140 170 116 M140 150 Q 126 162 114 160" stroke="${L("purk")}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      ${lit.has("atria") ? `<path d="M66 38 Q 50 50 52 62 M66 38 Q 120 30 168 56" stroke="var(--accent)" stroke-width="2" fill="none" stroke-dasharray="4 3"/>` : ""}</svg>`;
+    $("#apEcg", host).innerHTML = ECG.frame(ECG.renderBeat(c, "II", { band: v.ecg, before: 0.3, after: 0.66, bandColor: "#7c4dff", h: 30, base: 20 }), { tools: false });
+    $("#apInfo", host).innerHTML = `<h3>${v.t}</h3><p>${v.text}</p><p class="small"><b>Dominant current:</b> ${v.cur}</p>`;
+    $$("[data-v]", host).forEach(x => x.classList.toggle("on", x.dataset.v === on));
+  };
+  $$("[data-v]", host).forEach(x => x.onclick = () => { on = x.dataset.v; paint(); });
+  paint();
+}
+
+/* ---------- 4. 12-lead sandbox ---------- */
+function sandboxTool(host) {
+  const R = ECG.RHYTHMS;
+  const st = { rhythm: "nsr", rate: "", axis: "normal", cond: "none", stemi: "", stemiLevel: "meets", rvi: false, pvc: "", hyperK: "0", toggles: {} };
+  const TOG = [["lae", "LAE"], ["rae", "RAE"], ["lvh", "LVH"], ["lvhStrain", "LVH strain"], ["rvh", "RVH"], ["pericarditis", "Pericarditis"], ["ber", "BER"], ["hypothermia", "Hypothermia"], ["shiver", "Shivering"], ["cerebral", "Cerebral T waves"], ["digoxin", "Digoxin"], ["dewinter", "de Winter"], ["avr", "aVR pattern"], ["longQT", "Long QT"], ["reversal", "Arm leads swapped"]];
+  const sel = (id, opts, val) => `<select id="${id}">${opts.map(([v, t]) => `<option value="${v}" ${String(v) === String(val) ? "selected" : ""}>${t}</option>`).join("")}</select>`;
+  host.innerHTML = `<div class="sb-controls">
+    <label>Rhythm ${sel("sbRhythm", Object.keys(R).map(k => [k, R[k].name]), st.rhythm)}</label>
+    <label>Rate <input id="sbRate" type="number" min="20" max="250" placeholder="auto" inputmode="numeric" class="kb-skip"></label>
+    <label>Axis ${sel("sbAxis", [["normal", "Normal"], ["leftnormal", "Normal (0 to −30°)"], ["lad", "LAD"], ["rad", "RAD"], ["extreme", "Extreme"]], st.axis)}</label>
+    <label>Step 3 ${sel("sbCond", [["none", "Narrow, nothing"], ["rbbb", "RBBB"], ["lbbb", "LBBB"], ["lafb", "LAFB"], ["lpfb", "LPFB"], ["rbbb_lafb", "RBBB + LAFB"], ["rbbb_lpfb", "RBBB + LPFB"], ["wpw", "WPW"], ["lgl", "LGL"]], st.cond)}</label>
+    <label>STEMI ${sel("sbStemi", [["", "None"], ...Object.keys(ECG.TERR).map(k => [k, ECG.TERR[k].name])], st.stemi)}</label>
+    <label>STE size ${sel("sbLevel", [["meets", "Meets criteria"], ["sub", "Below criteria"]], st.stemiLevel)}</label>
+    <label>PVCs ${sel("sbPvc", [["", "None"], ["true", "Occasional"], ["bigeminy", "Bigeminy"], ["trigeminy", "Trigeminy"], ["couplet", "Couplet"], ["ront", "R on T"]], st.pvc)}</label>
+    <label>Potassium ${sel("sbK", [["0", "Normal"], ["1", "Peaked T"], ["2", "+ wide QRS"], ["3", "Severe (no P)"]], st.hyperK)}</label>
+    <label>Wellens ${sel("sbWell", [["", "No"], ["A", "Type A (biphasic)"], ["B", "Type B (deep)"]], "")}</label>
+    <label>Sgarbossa ${sel("sbSg", [["", "No"], ["concordant", "Concordant STE"], ["excessive", "Excessive discordant"]], "")}</label>
+    </div>
+    <div class="sb-toggles">${TOG.map(([k, t]) => `<label class="chk"><input type="checkbox" data-tog="${k}"> ${t}</label>`).join("")}<label class="chk"><input type="checkbox" id="sbRvi"> RV involvement</label></div>
+    <div class="row"><button class="btn primary" id="sbDraw">Draw it</button><button class="btn" id="sbRand">Surprise me</button><button class="btn" id="sbReset">Reset</button></div>
+    <div id="sbOut"></div>`;
+  const draw = () => {
+    const o = { rhythm: $("#sbRhythm", host).value, axis: $("#sbAxis", host).value, cond: $("#sbCond", host).value };
+    const rate = parseInt($("#sbRate", host).value, 10); if (rate) o.rate = rate;
+    const sm = $("#sbStemi", host).value; if (sm) { o.stemi = sm; o.stemiLevel = $("#sbLevel", host).value; }
+    if ($("#sbRvi", host).checked) o.rvi = true;
+    const pv = $("#sbPvc", host).value; if (pv) o.pvc = pv === "true" ? true : pv;
+    const k = +$("#sbK", host).value; if (k) o.hyperK = k;
+    const w = $("#sbWell", host).value; if (w) o.wellens = w;
+    const sg = $("#sbSg", host).value; if (sg) o.sgarb = sg;
+    $$("[data-tog]", host).forEach(x => { if (x.checked) o[x.dataset.tog] = true; });
+    if (["lafb", "rbbb_lafb", "lpfb", "rbbb_lpfb"].includes(o.cond) || o.rvh || o.rhythm === "vpaced") delete o.axis;
+    const c = ECG.build(o); c.history = "";
+    const t = c.truth;
+    $("#sbOut", host).innerHTML = ECG.frame(ECG.render12(c), { head: ECG.printHead(c) }) +
+      `<div class="card sb-read"><p class="lbl">The app would call this</p><p class="interp-model">${esc(modelInterp(c))}</p>
+      <p class="small">Rate ${t.rate} · QRS ${t.qrs.toFixed(2)} s · ${t.axisName.toLowerCase()} (about ${t.axisDeg}°) · Step 6: ${DX6[t.dx6] ? DX6[t.dx6].toLowerCase() : "—"}${t.lvhCrit.length ? ` · LVH: ${t.lvhCrit.length} criteri${t.lvhCrit.length > 1 ? "a" : "on"}` : ""}${t.sgarb ? ` · Sgarbossa ${t.sgarb.count}/3` : ""}</p>
+      <p class="small">Every draw is a fresh ECG, so press Draw again to see the same settings on a different patient.</p></div>`;
+    ECG.wire(host);
+  };
+  $("#sbDraw", host).onclick = draw;
+  $("#sbReset", host).onclick = () => sandboxTool(host);
+  $("#sbRand", host).onclick = () => {
+    const o = caseOptions(ECG.pick(["mixed", "stemi", "cond", "hyper", "rhythm"]));
+    $("#sbRhythm", host).value = o.rhythm || "nsr"; $("#sbRate", host).value = ""; $("#sbAxis", host).value = o.axis || "normal";
+    $("#sbCond", host).value = o.cond || "none"; $("#sbStemi", host).value = o.stemi || ""; $("#sbLevel", host).value = o.stemiLevel || "meets";
+    $("#sbPvc", host).value = o.pvc ? String(o.pvc) : ""; $("#sbK", host).value = String(o.hyperK || 0); $("#sbWell", host).value = o.wellens || ""; $("#sbSg", host).value = o.sgarb || "";
+    $$("[data-tog]", host).forEach(x => x.checked = !!o[x.dataset.tog]); $("#sbRvi", host).checked = !!o.rvi;
+    draw();
+  };
+  draw();
+}
+
+/* ---------- menu ---------- */
+function mountTools(box) {
+  const menu = () => {
+    box.innerHTML = `<div class="card tools-card"><p class="lbl">Hands-on tools</p><div class="tools-grid">${TOOLS.map(t => `<button class="tool-tile" data-tool="${t.id}" style="--c:${t.color}"><b>${t.name}</b><span>${t.blurb}</span></button>`).join("")}</div></div>`;
+    $$("[data-tool]", box).forEach(b => b.onclick = () => open(b.dataset.tool));
+  };
+  const open = id => {
+    const t = TOOLS.find(x => x.id === id);
+    box.innerHTML = `<div class="card tool-open"><div class="tool-head"><h2>${t.name}</h2><button class="link" id="toolBack">← All tools</button></div><div id="toolBody"></div></div>`;
+    $("#toolBack", box).onclick = menu;
+    ({ axis: axisTool, coronary: coronaryTool, ap: apTool, sandbox: sandboxTool })[id]($("#toolBody", box));
+    box.scrollIntoView({ block: "start", behavior: "smooth" });
+  };
+  menu();
+}
+
 /* ===================== DRILLS: one skill at a time =====================
    Each maker returns { ecg, q, kind: "mc"|"num", opts, right, ok, explain, unit } */
 const sqT = n => `${Math.round(n * 2) / 2}`;
@@ -3863,13 +4126,24 @@ const DRILLS = [
     return { ecg: ECG.frame(ECG.renderBeat(c, L, { band: [0, qw], before: 0.2, after: 0.5 }), { tools: false }), q: `Look at the Q wave (shaded) in ${L}. Physiological or pathological?`, kind: "mc", opts: ["Physiological (normal)", "Pathological"], right: path ? 1 : 0,
       explain: path ? `About ${sqT(qw / 0.04)} small squares wide and about ${Math.round(sh.q / sh.r * 100) / 100 >= 0.33 ? "more than ⅓" : "close to ⅓"} of the R wave. Pathological: ≥ 0.04 s and/or ≥ ⅓ of the R, in 2 contiguous leads. Think old (or current) infarct.` : "Small and narrow: under 1 small square (0.04 s) and well under ⅓ of the R. A normal septal q." };
   } },
-  { id: "wave", name: "Wave spotter", blurb: "What's shaded, and what does it show?", make() {
-    const c = ECG.build({ rhythm: "nsr" }); const s = c.spec;
-    const W = [["P wave", [-s.pr, -s.pr + 0.1], "The SA node fires and the atria depolarise."], ["PR interval", [-s.pr, 0], "From the start of atrial depolarisation to the start of the QRS. The AV node holds the impulse so the atria empty."],
-      ["QRS complex", [0, s.qrs], "Ventricular depolarisation (phase 0)."], ["ST segment", [s.qrs, s.qt - 0.19], "Complete depolarisation: the plateau (phase 2), the long squeeze."], ["T wave", [s.qt - 0.19, s.qt], "Repolarisation of the ventricles (phase 3)."], ["QT interval", [0, s.qt], "From the start of the QRS to the end of the T: ventricular depolarisation and repolarisation."]];
+  { id: "wave", name: "Wave spotter", blurb: "Waves, intervals, segments and the J point", make() {
+    const c = ECG.build({ rhythm: "nsr", rate: ECG.rint(62, 85) }); const s = c.spec;
+    const d = c.shapes.II.sup.d; const rr = 60 / s.rate; const rPk = 0.45 * d;
+    const tc = Math.max(s.qt - 0.1, d + 0.11); const tOn = Math.max(d + 0.03, tc - 0.12); const pEnd = -s.pr + 0.105;
+    const W = [
+      ["P wave", [-s.pr, pEnd], "The SA node fires and the atria depolarise."],
+      ["PR segment", [pEnd, 0], "From the end of the P wave to the start of the QRS, while the AV node holds the impulse. It's the baseline you compare against; pericarditis shows PR depression here."],
+      ["PR interval", [-s.pr, 0], "From the start of the P wave to the start of the QRS: atrial depolarisation plus the AV node delay. Normal 0.12–0.20 s."],
+      ["QRS complex", [0, d], "Ventricular depolarisation (phase 0). Normal under 0.11 s."],
+      ["J point", [d - 0.008, d + 0.008], "Where the QRS ends and the ST segment begins. ST elevation and depression are measured here."],
+      ["ST segment", [d, tOn], "From the J point to the start of the T wave: the ventricles are fully depolarised (the plateau, phase 2)."],
+      ["T wave", [tOn, s.qt], "Repolarisation of the ventricles (phase 3)."],
+      ["QT interval", [0, s.qt], "From the start of the QRS to the end of the T: ventricular depolarisation and repolarisation."],
+      ["R–R interval", [rPk, rPk + rr], "From one R wave to the next. Use it for the rate (1500 ÷ small squares) and to check regularity."]
+    ];
     const k = Math.floor(Math.random() * W.length);
     const opts = W.map(w => w[0]);
-    return { ecg: ECG.frame(ECG.renderBeat(c, "II", { band: W[k][1], before: s.pr + 0.08, after: s.qt + 0.12 }), { tools: false }), q: "What's shaded?", kind: "mc", opts, right: k, explain: `<b>${W[k][0]}</b>. ${W[k][2]}` };
+    return { ecg: ECG.frame(ECG.renderBeat(c, "II", { band: W[k][1], before: s.pr + 0.08, after: rr + 0.14, bandColor: k === 4 ? "#d42a3c" : undefined }), { tools: false }), q: "What's shaded?", kind: "mc", opts, right: k, explain: `<b>${W[k][0]}</b>. ${W[k][2]}` };
   } }
 ];
 const drillById = id => DRILLS.find(d => d.id === id);
@@ -3979,18 +4253,20 @@ function initLearn() {
   const root = $("#learn");
   const paint = () => {
     const open = new Set($$(".ref[open]", root).map(d => d.dataset.t));
+    const oldTools = $("#lnTools", root);
     const s = cardsAll();
     root.innerHTML = `
       <div class="card song-card hero"><h2 class="review-main">The 6-step song</h2><p class="small">Ben's learning song. Sing it on the way to placement.</p><div class="vid-row">${vidBtn("song")}</div>
         <details><summary class="link">Show the lyrics</summary><div class="lyrics">${SONG.map(v => `<div class="verse"><b>${v.step === 7 ? "Interpretation" : "Step " + v.step}</b>${v.lines.map(l => `<p>${esc(l)}</p>`).join("")}</div>`).join("")}</div></details></div>
+      <div id="lnTools"></div>
       <input type="search" id="lnSearch" placeholder="Search the notes…" autocomplete="off" class="kb-skip">
       <div class="ref-list">${TOPICS.map(t => {
         const cs = CARDS.filter(c => c.topic === t.id); const learned = cs.filter(c => isLearned(s[c.id])).length; const m = medalLevel(t.id);
         return `<details class="card ref" data-t="${t.id}" ${open.has(t.id) ? "open" : ""}><summary>${m ? medalHTML(m) : '<span class="medal-empty"></span>'}<span class="tname">${esc(t.name)}</span><span class="routes">${learned} of ${cs.length} cards learned</span></summary>
           <div class="body">${(TOPIC_VIDEOS[t.id] || []).length ? `<div class="vid-row">${TOPIC_VIDEOS[t.id].map(vidBtn).join("")}</div>` : ""}${vlink(NOTES[t.id])}</div></details>`;
       }).join("")}
-      <div class="card real-note"><p class="lbl">Real ECGs</p><p class="small">Real 12-leads from your lecturers will be added to Six Step. Until then every ECG is drawn by the app on standard paper (25 mm/s, 10 mm/mV).</p></div>
-      <div class="card coming"><p class="lbl">Coming with later modules</p><p class="small">Step 3 (BBB, IVCD, WPW), Step 4 (hypertrophy) and Step 6 (STEMI criteria and mimics).</p></div></div>`;
+      <div class="card real-note"><p class="lbl">Real ECGs</p><p class="small">Real 12-leads from your lecturers will be added to Six Step. Until then every ECG is drawn by the app on standard paper (25 mm/s, 10 mm/mV).</p></div></div>`;
+    if (oldTools && oldTools.firstChild) $("#lnTools", root).replaceWith(oldTools); else mountTools($("#lnTools", root));
     const q = $("#lnSearch");
     q.oninput = () => { const v = q.value.trim().toLowerCase(); $$(".ref", root).forEach(el => { el.hidden = v && !el.textContent.toLowerCase().includes(v); if (v && !el.hidden) el.open = true; }); };
   };
